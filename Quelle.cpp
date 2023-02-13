@@ -1,10 +1,19 @@
 //	https://www.arndt-bruenner.de/mathe/10/parabeltangente.htm#:~:text=Somit%20ergibt%20sich%20f%C3%BCr%20die%20Tangente%20an%20die,jeden%20Punkt%20x%20durch%202ax%20%2B%20b%20gegeben.
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <iterator>
 #include <initializer_list>
+#include <numeric>
+
+bool isNumeric(std::string str) {
+	for (int i = 0; i < str.length(); i++)
+		if (isdigit(str[i]) == false)
+			return false; //when one non numeric value is found, return false
+	return true;
+}
 
 class Point
 {
@@ -100,33 +109,61 @@ public:
 		return "y = " + std::to_string(A()) + "x + " + std::to_string(B());
 	}
 };
+
+bool  saisie_non_valide{};
+float  valeur_attendue;
+std::string str;
+float eingabe() {
+	do {
+		std::string  str;
+		std::cin >> str;         // lire une ligne sans polluer le flux std::cin
+		std::istringstream  iss{ str };     // début de l'analyse
+		// analyser avec iss par exemple:
+		saisie_non_valide = true;
+		if (!(iss >> valeur_attendue)) {
+			std::cout << "valeur numérique attendue, recommencez";
+		}
+		else if (valeur_attendue > std::numeric_limits<float>::max() || valeur_attendue < -std::numeric_limits<float>::max())
+			std::cout << "valeur numérique hors limite, recommencez";
+		else
+			saisie_non_valide = false;
+
+	} while (saisie_non_valide);
+	return valeur_attendue;
+}
 int main() {
 	Point poiA(0, 0);
-	Point poiB(2, pow(2, 2));
-
+	Point poiB(2, pow(2.0f, 2.0f));
+	std::cout << "std::numeric_limits<float>::min(): " << std::numeric_limits<float>::min();
 
 	Kurve parabole({ 0,0 });
 	for (float i = 0; i < 100; i++)
 		parabole.kur.push_back({ i * 0.1f,pow(i * 0.1f,2.0f) });
 
+
 	float xQ, yQ;
 	std::cout << "Veuillez calculer le point à partir duquel la tangente est calculée sur la parabole:   " << std::endl;
 	std::cout << "S’il vous plaît x: ";
-	std::cin >> xQ;
+	xQ = eingabe();
+
+
 
 	std::cout << std::endl;
 	std::cout << "S’il vous plaît y: ";
-	std::cin >> yQ;
+	yQ = eingabe();
+
+
 	float aa, bb, cc;
+
 	std::cout << std::endl;
 	std::cout << "a * x^2 + b * x + c: S'il vous plait a: " << std::endl;
-	std::cin >> aa;
+	aa = eingabe();
 	std::cout << std::endl;
 	std::cout << "a * x^2 + b * x + c: S'il vous plait b: " << std::endl;
-	std::cin >> bb;
+	bb = eingabe();
 	std::cout << std::endl;
 	std::cout << "a * x^2 + b * x + c: S'il vous plait c: " << std::endl;
-	std::cin >> cc;
+	cc = eingabe();
 	Kurve parabole_Bsp_1({ 0.0f,0.0f });
 	for (float i = -30.0f; i < 100; i++) {
 		parabole_Bsp_1.kur.push_back({ i * 0.1f, aa * pow(i * 0.1f,2.0f) + bb * i * 0.1f + cc });
@@ -137,7 +174,7 @@ int main() {
 
 
 
-	// Parabel yT = aaxT^2 + bbxT +cc  ; Tangente yT = (2aaxT +bb) xT + B
+	// Parabel yT = aa * xT^2 + bb * xT + cc  ; Tangente yT = (2aa * xT +bb) * xT + B
 
 
 
@@ -145,24 +182,29 @@ int main() {
 	//  https://www.youtube.com/watch?v=ql_w5paclOs
 
 	// f(x)Tangente = f(x)Parabel
-	// aax^2 +bx + c = AxO + B = (2 * aa * x + bb) * x + B
-	// aa * x^2  + bb * x * xQ + cc = 2 * aa * x^2 + bb * x + B 
-	// -aa *  x^2 + (bb * xQ - bb ) * x + 2 * xQ - yQ + 1 = 0
+	// aax^2 +bbx + cc = AxO + B = (2 * aa * x + bb) * x + B ; A = 2 * aa * x + bb
+	// aa * x^2  + bb * x  + cc = 2 * aa * x^2 + bb * x + B ; yO = A * xO + B; B = yO - (2 * aa * x * xO + bb * xO) = 
+	// -aa *  x^2 + (2 * xQ - yQ + 1) + yO - 2 * aa *x * xO - bb * xO = 0
+	// -aa * x^2 - 2 * aa * xO * x + cc - bb * xO + yO = 0
+	// aa * x^2 + 2 aa * xO * x - cc + bb * xO + yO = 0
 
 
+	float a = aa;
+	std::cout << "a : " << a << std::endl;
 
-	float a = -aa;
-
-	float b = bb * xQ - bb;
-
-	float c = 2 * xQ - yQ + 1;
-
+	float b = -2 * aa * xQ;
+	std::cout << "b : " << b << std::endl;
+	float c = yQ - bb * xQ - cc;
+	//float c = bb - cc - bb * xQ + yQ ? Error;
+	std::cout << "c : " << c << std::endl;
 	float xT1 = ((-1) * b + std::sqrt(pow(b, 2.0f) - 4 * a * c)) / (2 * a);
-
+	float d = pow(b, 2.0f) - 4 * a * c;
+	std::cout << "d : " << d << std::endl;
+	std::cout << "xT1: " << xT1 << std::endl;
 	float xT2 = ((-1) * b - std::sqrt(pow(b, 2.0f) - 4 * a * c)) / (2 * a);
-
-	float A1 = -6.0f * xT1 + 2;
-	float A2 = -6.0f * xT2 + 2;
+	std::cout << "xT2: " << xT2 << std::endl;
+	float A1 = 2 * aa * xT1 + bb;
+	float A2 = 2 * aa * xT2 + bb;
 	float B1 = yQ - A1 * xQ;
 	float B2 = yQ - A2 * xQ;
 
@@ -185,36 +227,4 @@ int main() {
 		<< "T2(" << xT2 << ", " << yT2 << ")" << std::endl;
 
 
-	auto it = parabole_Bsp_1.kur.begin();
-	while (it != parabole_Bsp_1.kur.end()) {
-		std::cout << "parabole(x, y) " << *it++ << std::endl;
-
-	}
-	std::cout << "Hiperbole " << std::endl;
-	Kurve hiperbole({ 0,0 });
-	for (float i = 0; i < 100; i++)
-		hiperbole.kur.push_back({ i * 0.1f,pow(i * 0.1f,.5f) });
-
-
-
-
-
-	auto it_h = hiperbole.kur.begin();
-	while (it_h != hiperbole.kur.end()) {
-		std::cout << *it_h++ << std::endl;
-
-	}
-
-
-	Point pA(3.5f, 4.0f);
-	Point pB(-4.0f, 2.0f);
-	Point pC(2.0f, -2.0f);
-	Point pD(-2.0f, 5.0f);
-	std::cout << "Point d'intersection des deux lignes droites: " << std::endl;
-	Segment Line1(pA, pB);
-	std::cout << Line1.equation() << std::endl;
-	Segment Line2(pC, pD);
-	std::cout << Line2.equation() << std::endl;
-
-	std::cout << Line1.intersection(Line2);	// Point d'intersection des deux lignes droites	
 }
